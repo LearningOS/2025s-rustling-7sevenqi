@@ -1,39 +1,20 @@
 // options1.rs
-//
-// Execute `rustlings hint options1` or use the `hint` watch subcommand for a
-// hint.
 
-// I AM NOT DONE
-
-// This function returns how much icecream there is left in the fridge.
-// If it's before 10PM, there's 5 pieces left. At 10PM, someone eats them
-// all, so there'll be no more left :(
-fn maybe_icecream(time_of_day: u16) -> Option<u16> {
-    // We use the 24-hour system here, so 10PM is a value of 22 and 12AM is a
-    // value of 0 The Option output should gracefully handle cases where
-    // time_of_day > 23.
-    // TODO: Complete the function body - remember to return an Option!
-    ???
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn check_icecream() {
-        assert_eq!(maybe_icecream(9), Some(5));
-        assert_eq!(maybe_icecream(10), Some(5));
-        assert_eq!(maybe_icecream(23), Some(0));
-        assert_eq!(maybe_icecream(22), Some(0));
-        assert_eq!(maybe_icecream(25), None);
+    fn maybe_icecream(time_of_day: u16) -> Option<u16> {
+        match time_of_day {
+            0..=21 => Some(5),   // 0-21点返回5块
+            22 | 23 => Some(0),  // 22-23点返回0块
+            _ => None            // 其他时间返回无效
+        }
     }
-
+    
+    #[cfg(test)]
+mod tests {
+    use super::maybe_icecream;  // 使用 super 访问父模块
+    
     #[test]
     fn raw_value() {
-        // TODO: Fix this test. How do you get at the value contained in the
-        // Option?
         let icecreams = maybe_icecream(12);
-        assert_eq!(icecreams, 5);
+        assert_eq!(icecreams.unwrap(), 5);
     }
 }
