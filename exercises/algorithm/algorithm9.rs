@@ -1,8 +1,3 @@
-/*
-	heap
-	This question requires you to implement a binary heap function
-*/
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +18,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![T::default()], // 占位符，索引从1开始
             comparator,
         }
     }
@@ -37,7 +32,20 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 插入到末尾并上浮
+        self.items.push(value);
+        self.count += 1;
+        let mut idx = self.count;
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent]) {
+                // 子节点应在父节点上方，交换位置
+                self.items.swap(idx, parent);
+                idx = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +65,20 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        if right > self.count {
+            // 只有左子节点
+            left
+        } else {
+            // 比较左右子节点，返回符合比较器的较小者
+            if (self.comparator)(&self.items[left], &self.items[right]) {
+                left
+            } else {
+                right
+            }
+        }
     }
 }
 
@@ -79,13 +99,39 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone, // 需要Clone来返回值
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+
+        let mut idx = 1;
+        let mut result = self.items[idx].clone();
+        // 最后一个元素移到根节点
+        self.count -= 1;
+        if self.count > 0 {
+            self.items[idx] = self.items[self.count + 1].clone();
+            self.items.truncate(self.count + 1); // 移除最后一个元素
+
+            // 下沉调整
+            while self.children_present(idx) {
+                let child = self.smallest_child_idx(idx);
+                if (self.comparator)(&self.items[child], &self.items[idx]) {
+                    // 子节点应在父节点上方，交换位置
+                    self.items.swap(idx, child);
+                    idx = child;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            self.items.truncate(1); // 保持占位符
+        }
+
+        Some(result)
     }
 }
 
@@ -95,7 +141,7 @@ impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + Clone, // Iterator需要Clone
     {
         Heap::new(|a, b| a < b)
     }
@@ -107,7 +153,7 @@ impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + Clone, // Iterator需要Clone
     {
         Heap::new(|a, b| a > b)
     }
